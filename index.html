@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daink List</title>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f0f2f5;
+            --primary-color: #ffffff;
+            --secondary-color: #f8f9fa;
+            --accent-color: #6a5acd;
+            --text-color: #1c1e21;
+            --text-muted-color: #65676b;
+            --border-color: #e0e0e0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --success-color: #4caf50;
+            --danger-color: #e74c3c;
+            --warning-color: #ff9800;
+        }
+
+        body.theme-dark {
+            --bg-color: #1a1a1a;
+            --primary-color: #242526;
+            --secondary-color: #3a3b3c;
+            --accent-color: #7b68ee;
+            --text-color: #e4e6eb;
+            --text-muted-color: #b0b3b8;
+            --border-color: #404040;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --danger-color: #ff6659;
+            --success-color: #66bb6a;
+            --warning-color: #ffa726;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        #root {
+            height: 100%;
+        }
+        .app-container {
+            background-color: var(--primary-color);
+            border-radius: 0;
+            box-shadow: none;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: background-color 0.3s ease;
+        }
+        .main-content::-webkit-scrollbar,
+        .summary-cards::-webkit-scrollbar,
+        .agenda-container::-webkit-scrollbar {
+            display: none;
+        }
+        .main-content,
+        .agenda-container {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .main-content {
+            padding-bottom: 80px; /* Space for bottom nav */
+        }
+        .view-padding {
+            padding: 20px;
+        }
+        .add-task-form-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .bottom-nav {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        body.theme-dark .bottom-nav {
+            background-color: rgba(30, 30, 30, 0.8);
+            border-top-color: var(--border-color);
+        }
+
+        .header-icon-btn:hover, .nav-btn:hover {
+            transform: scale(1.1);
+            color: var(--accent-color);
+        }
+        
+        .fab-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        /* --- Touch Feedback Styles --- */
+        .header-icon-btn:active,
+        .nav-btn:active,
+        .fab-btn:active,
+        .filter-button-style:active,
+        .add-task-btn:active,
+        .calendar-nav-btn:active,
+        .close-button:active {
+            transform: scale(0.95);
+            transition: transform 0.1s ease;
+        }
+
+        .calendar-cell:active {
+            transform: scale(0.96);
+            background-color: var(--secondary-color);
+            transition: transform 0.1s ease, background-color 0.1s ease;
+        }
+
+        .summary-card-interactive:active {
+            transform: translateY(-5px) scale(0.98);
+            box-shadow: 0 4px 15px var(--shadow-color);
+        }
+
+        /* --- Home View Interactive Styles --- */
+        .summary-card-interactive:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px var(--shadow-color);
+        }
+
+        /* --- Checkbox Styles & Animations --- */
+        [data-role="checkbox-area"]:hover .task-checkbox-visual:not(.checked) {
+            border-color: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .task-checkbox-visual.checked {
+            /* Prevents hover scale when already checked */
+            transform: scale(1);
+        }
+
+        @keyframes check-pop {
+            from {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .check-icon-animate {
+            animation: check-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px) scale(0.98); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
+        }
+        @keyframes empty-icon-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        @media (min-width: 500px) {
+            .add-task-form-layout {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+            .add-task-form-layout > .full-width {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .app-container {
+                max-width: 800px;
+                margin: 2rem auto;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px var(--shadow-color);
+                height: calc(100vh - 4rem);
+            }
+            .view-padding {
+                padding: 30px 40px;
+            }
+            .modal-content-responsive {
+                max-width: 600px;
+            }
+            .task-list-grid {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+            .calendar-cell {
+                min-height: 120px;
+            }
+            .calendar-view-responsive {
+                flex-direction: row;
+                align-items: flex-start;
+                padding: 20px;
+                gap: 20px;
+            }
+            .calendar-grid-wrapper-responsive {
+                flex: 1.5;
+                max-width: 60%;
+                border-right: 1px solid var(--border-color);
+                padding-right: 20px;
+            }
+            .agenda-container-responsive {
+                flex: 1;
+                max-width: 40%;
+                height: 100%; /* Fill vertical space */
+                border-top: none;
+                padding-left: 20px;
+            }
+        }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@rc",
+    "react-dom/client": "https://esm.sh/react-dom@rc/client",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="text/babel" data-type="module" src="index.tsx"></script>
+</body>
+</html>

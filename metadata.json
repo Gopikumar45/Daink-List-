@@ -1,0 +1,5 @@
+{
+  "description": "A modern, responsive To-Do List application built with React. It features task categorization, a calendar view, gesture support for mobile, and a sleek dark theme. All functionality is contained within a single file.",
+  "requestFramePermissions": [],
+  "name": "Daink List"
+}
